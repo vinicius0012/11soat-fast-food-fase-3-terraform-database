@@ -74,10 +74,11 @@ jobs:
         working-directory: ./terraform-database
         run: |
           terraform plan \
-            -var="project_name=fastfood" \
-            -var="aws_region=sa-east-1" \
-            -var="github_org=vinicius0012" \
-            -var="github_repo=11soat-fast-food-fase-3-terraform-database"
+          -var="project_name=fastfood" \
+          -var="aws_region=sa-east-1" \
+          -var="vpc_id=vpc-XXXXXXXX" \
+          -var='private_subnet_ids=["subnet-AAA","subnet-BBB"]' \
+          -var='allowed_sg_ids=["sg-eks","sg-lambda"]'
 
 #   terraform-apply:
 #     name: "Terraform Apply"
@@ -111,8 +112,10 @@ jobs:
 #       - name: Terraform Apply
 #         working-directory: ./terraform
 #         run: |
-#           terraform apply -auto-approve \
-#             -var="project_name=fastfood" \
-#             -var="aws_region=sa-east-1" \
-#             -var="github_org=vinicius0012" \
-#             -var="github_repo=11soat-fast-food-fase-3-api"
+# terraform apply \
+#   -var="project_name=fastfood" \
+#   -var="aws_region=sa-east-1" \
+#   -var="vpc_id=vpc-XXXXXXXX" \
+#   -var='private_subnet_ids=["subnet-AAA","subnet-BBB"]' \
+#   -var='allowed_sg_ids=["sg-eks","sg-lambda"]' \
+#   -auto-approve

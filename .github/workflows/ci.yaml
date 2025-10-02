@@ -7,10 +7,9 @@ on:
       - "**/*.tf"
       - "**/*.tfvars"
       - ".github/workflows/**"
-
 env:
   TF_VERSION: "1.13.3"
-  AWS_REGION: "us-east-1" # Usar a Region de um secret
+  AWS_REGION: "us-east-1"
 
 jobs:
   terraform-validate:
@@ -80,42 +79,43 @@ jobs:
           -var='private_subnet_ids=["subnet-AAA","subnet-BBB"]' \
           -var='allowed_sg_ids=["sg-eks","sg-lambda"]'
 
-#   terraform-apply:
-#     name: "Terraform Apply"
-#     runs-on: ubuntu-latest
-#     needs: terraform-plan
-#     if: github.ref == 'refs/heads/main'
+  terraform-apply:
+     name: "Terraform Apply"
+     runs-on: ubuntu-latest
+     needs: terraform-plan
+     if: github.ref == 'refs/heads/main'
 
-#     permissions:
-#       id-token: write
-#       contents: read
+     permissions:
+       id-token: write
+       contents: read
 
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v4
+     steps:
+       - name: Checkout
+         uses: actions/checkout@v4
 
-#       - name: Configure AWS credentials
-#         uses: aws-actions/configure-aws-credentials@v4
-#         with:
-#           role-to-assume: ${{ secrets.AWS_ACTIONS_ROLE }}
-#           aws-region: ${{ env.AWS_REGION }}
+       - name: Configure AWS credentials
+         uses: aws-actions/configure-aws-credentials@v4
+         with:
+           role-to-assume: ${{ secrets.AWS_ACTIONS_ROLE }}
+           aws-region: ${{ env.AWS_REGION }}
 
-#       - name: Setup Terraform
-#         uses: hashicorp/setup-terraform@v2
-#         with:
-#           terraform_version: ${{ env.TF_VERSION }}
+       - name: Setup Terraform
+         uses: hashicorp/setup-terraform@v2
+         with:
+           terraform_version: ${{ env.TF_VERSION }}
 
-#       - name: Terraform Init
-#         working-directory: ./terraform
-#         run: terraform init
+       - name: Terraform Init
+         working-directory: ./terraform
+         run: terraform init
 
-#       - name: Terraform Apply
-#         working-directory: ./terraform
-#         run: |
-# terraform apply \
-#   -var="project_name=fastfood" \
-#   -var="aws_region=sa-east-1" \
-#   -var="vpc_id=vpc-XXXXXXXX" \
-#   -var='private_subnet_ids=["subnet-AAA","subnet-BBB"]' \
-#   -var='allowed_sg_ids=["sg-eks","sg-lambda"]' \
-#   -auto-approve
+       - name: Terraform Apply
+         working-directory: ./terraform
+         run: |
+       # Executa o terraform apply #
+       #   terraform apply \
+       #    -var="project_name=fastfood" \
+       #    -var="aws_region=sa-east-1" \
+       #    -var="vpc_id=vpc-XXXXXXXX" \
+       #    -var='private_subnet_ids=["subnet-AAA","subnet-BBB"]' \
+       #    -var='allowed_sg_ids=["sg-eks","sg-lambda"]' \
+       #    -auto-approve

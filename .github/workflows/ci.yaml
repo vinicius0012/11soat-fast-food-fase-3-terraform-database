@@ -72,13 +72,33 @@ jobs:
       - name: Clean existing resources
         run: |
           echo "Cleaning existing resources..."
-          # Deletar recursos existentes manualmente
+          
+          # Deletar Security Group (aguardar se necessário)
+          echo "Deleting Security Group..."
           aws ec2 delete-security-group --group-name fastfood-rds-sg 2>/dev/null || echo "Security Group not found"
+          sleep 5
+          
+          # Deletar outros recursos
+          echo "Deleting other resources..."
           aws rds delete-db-subnet-group --db-subnet-group-name fastfood-rds-subnetgrp 2>/dev/null || echo "DB Subnet Group not found"
           aws secretsmanager delete-secret --secret-id fastfood/rds/postgres --force-delete-without-recovery 2>/dev/null || echo "Secret not found"
           aws rds delete-db-parameter-group --db-parameter-group-name fastfood-pg16 2>/dev/null || echo "DB Parameter Group not found"
           aws iam detach-role-policy --role-name fastfood-rds-monitoring-role --policy-arn arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole 2>/dev/null || echo "Policy not attached"
           aws iam delete-role --role-name fastfood-rds-monitoring-role 2>/dev/null || echo "IAM Role not found"
+          
+          # Aguardar um pouco mais para garantir que tudo foi deletado
+          sleep 10
+          
+          # Verificar se o Security Group ainda existe
+          echo "Verifying Security Group deletion..."
+          if aws ec2 describe-security-groups --group-names fastfood-rds-sg >/dev/null 2>&1; then
+            echo "Security Group still exists, trying to delete again..."
+            aws ec2 delete-security-group --group-name fastfood-rds-sg
+            sleep 5
+          else
+            echo "Security Group successfully deleted"
+          fi
+          
           echo "Cleanup completed"
       - name: Terraform Apply
         run: |

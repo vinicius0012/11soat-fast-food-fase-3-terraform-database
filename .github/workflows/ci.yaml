@@ -69,6 +69,15 @@ jobs:
         with:
           terraform_version: ${{ env.TF_VERSION }}
       - run: terraform init -upgrade
+      - name: Refresh Terraform state
+        run: |
+          # Atualizar state com recursos existentes
+          terraform refresh -auto-approve \
+            -var="project_name=fastfood" \
+            -var="aws_region=${{ env.AWS_REGION }}" \
+            -var="vpc_id=${{ secrets.VPC_ID }}" \
+            -var='private_subnet_ids=${{ secrets.PRIVATE_SUBNET_IDS }}' \
+            -var='allowed_sg_ids=${{ secrets.ALLOWED_SG_IDS }}' || true
       - name: Terraform Apply
         run: |
           terraform apply -auto-approve \

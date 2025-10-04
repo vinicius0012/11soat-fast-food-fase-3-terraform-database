@@ -69,15 +69,30 @@ jobs:
         with:
           terraform_version: ${{ env.TF_VERSION }}
       - run: terraform init -upgrade
-      - name: Refresh Terraform state
+      - name: Import existing resources
         run: |
-          # Atualizar state com recursos existentes
-          terraform refresh -auto-approve \
-            -var="project_name=fastfood" \
-            -var="aws_region=${{ env.AWS_REGION }}" \
-            -var="vpc_id=${{ secrets.VPC_ID }}" \
-            -var='private_subnet_ids=${{ secrets.PRIVATE_SUBNET_IDS }}' \
-            -var='allowed_sg_ids=${{ secrets.ALLOWED_SG_IDS }}' || true
+          # Importar recursos existentes (ignorar erros se não existirem)
+          echo "Importing existing resources..."
+          
+          # Security Group
+          SG_ID=$(aws ec2 describe-security-groups --group-names fastfood-rds-sg --query 'SecurityGroups[0].GroupId' --output text 2>/dev/null || echo "")
+          if [ "$SG_ID" != "" ] && [ "$SG_ID" != "None" ]; then
+            terraform import aws_security_group.rds $SG_ID || echo "Security Group already imported or not found"
+          fi
+          
+          # DB Subnet Group
+          terraform import aws_db_subnet_group.this fastfood-rds-subnetgrp || echo "DB Subnet Group already imported or not found"
+          
+          # Secrets Manager Secret
+          terraform import aws_secretsmanager_secret.db_secret fastfood/rds/postgres || echo "Secret already imported or not found"
+          
+          # DB Parameter Group
+          terraform import aws_db_parameter_group.pg fastfood-pg16 || echo "DB Parameter Group already imported or not found"
+          
+          # IAM Role
+          terraform import aws_iam_role.rds_monitoring fastfood-rds-monitoring-role || echo "IAM Role already imported or not found"
+          
+          echo "Import completed"
       - name: Terraform Apply
         run: |
           terraform apply -auto-approve \

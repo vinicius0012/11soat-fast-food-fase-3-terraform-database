@@ -43,9 +43,8 @@ resource "aws_db_subnet_group" "this" {
 
 # --------- Secrets: usuário/senha ---------
 resource "random_password" "db" {
-  length           = 20
-  override_characters = "!@#%*+-_"
-  special          = true
+  length  = 20
+  special = true
 }
 
 resource "aws_secretsmanager_secret" "db_secret" {

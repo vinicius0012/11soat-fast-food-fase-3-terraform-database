@@ -1,3 +1,8 @@
+# Random ID para evitar conflitos de nomes
+resource "random_id" "suffix" {
+  byte_length = 4
+}
+
 locals {
   name = var.project_name
   tags = {
@@ -9,7 +14,7 @@ locals {
 
 # --------- SG do RDS (permite acesso apenas de SGs autorizados) ---------
 resource "aws_security_group" "rds" {
-  name        = "${local.name}-rds-sg"
+  name        = "${local.name}-rds-sg-${random_id.suffix.hex}"
   description = "Acesso ao PostgreSQL apenas de SGs permitidos"
   vpc_id      = var.vpc_id
   tags        = local.tags

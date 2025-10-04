@@ -69,48 +69,17 @@ jobs:
         with:
           terraform_version: ${{ env.TF_VERSION }}
       - run: terraform init -upgrade
-      - name: Force clean all resources
+      - name: Clean old resources (optional)
         run: |
-          echo "Force cleaning all resources..."
-          
-          # Função para deletar Security Group com retry
-          delete_sg() {
-            local max_attempts=5
-            local attempt=1
-            
-            while [ $attempt -le $max_attempts ]; do
-              echo "Attempt $attempt: Deleting Security Group..."
-              if aws ec2 describe-security-groups --group-names fastfood-rds-sg >/dev/null 2>&1; then
-                aws ec2 delete-security-group --group-name fastfood-rds-sg 2>/dev/null || true
-                sleep 10
-                if ! aws ec2 describe-security-groups --group-names fastfood-rds-sg >/dev/null 2>&1; then
-                  echo "Security Group deleted successfully"
-                  return 0
-                fi
-              else
-                echo "Security Group not found"
-                return 0
-              fi
-              attempt=$((attempt + 1))
-            done
-            echo "Failed to delete Security Group after $max_attempts attempts"
-            return 1
-          }
-          
-          # Deletar Security Group com retry
-          delete_sg || echo "Security Group deletion failed, continuing..."
-          
-          # Deletar outros recursos
-          echo "Deleting other resources..."
-          aws rds delete-db-subnet-group --db-subnet-group-name fastfood-rds-subnetgrp 2>/dev/null || echo "DB Subnet Group not found"
-          aws secretsmanager delete-secret --secret-id fastfood/rds/postgres --force-delete-without-recovery 2>/dev/null || echo "Secret not found"
-          aws rds delete-db-parameter-group --db-parameter-group-name fastfood-pg16 2>/dev/null || echo "DB Parameter Group not found"
-          aws iam detach-role-policy --role-name fastfood-rds-monitoring-role --policy-arn arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole 2>/dev/null || echo "Policy not attached"
-          aws iam delete-role --role-name fastfood-rds-monitoring-role 2>/dev/null || echo "IAM Role not found"
-          
-          # Aguardar mais tempo
-          sleep 15
-          echo "Force cleanup completed"
+          echo "Cleaning old resources with fixed names..."
+          # Limpar apenas recursos com nomes fixos (não os novos com sufixo)
+          aws ec2 delete-security-group --group-name fastfood-rds-sg 2>/dev/null || echo "Old Security Group not found"
+          aws rds delete-db-subnet-group --db-subnet-group-name fastfood-rds-subnetgrp 2>/dev/null || echo "Old DB Subnet Group not found"
+          aws secretsmanager delete-secret --secret-id fastfood/rds/postgres --force-delete-without-recovery 2>/dev/null || echo "Old Secret not found"
+          aws rds delete-db-parameter-group --db-parameter-group-name fastfood-pg16 2>/dev/null || echo "Old DB Parameter Group not found"
+          aws iam detach-role-policy --role-name fastfood-rds-monitoring-role --policy-arn arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole 2>/dev/null || echo "Old Policy not attached"
+          aws iam delete-role --role-name fastfood-rds-monitoring-role 2>/dev/null || echo "Old IAM Role not found"
+          echo "Old resources cleanup completed"
       - name: Terraform Apply
         run: |
           terraform apply -auto-approve \

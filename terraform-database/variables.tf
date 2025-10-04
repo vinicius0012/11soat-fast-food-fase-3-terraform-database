@@ -28,7 +28,7 @@ variable "db_engine_version" {
 variable "db_instance_class" {
   description = "Classe da instância."
   type        = string
-  default     = "db.t4g.medium"
+  default     = "db.t3.micro"
 }
 variable "db_name" {
   description = "Nome do database."
@@ -53,7 +53,7 @@ variable "storage_encrypted" {
 variable "multi_az" {
   description = "Habilita Multi-AZ para alta disponibilidade."
   type        = bool
-  default     = true
+  default     = false
 }
 variable "performance_insights_enabled" {
   description = "Habilita Performance Insights."

@@ -89,10 +89,10 @@ resource "aws_db_instance" "postgres" {
   username                   = "app_user"
   password                   = random_password.db.result
 
-  allocated_storage          = 50
-  max_allocated_storage      = 200
+  allocated_storage          = 20
+  max_allocated_storage      = 20
   storage_encrypted          = var.storage_encrypted
-  storage_type               = "gp3"
+  storage_type               = "gp2"
   backup_retention_period    = var.backup_retention_period
   deletion_protection        = var.deletion_protection
   multi_az                   = var.multi_az

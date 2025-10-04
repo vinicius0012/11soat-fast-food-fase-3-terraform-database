@@ -69,25 +69,19 @@ jobs:
         with:
           terraform_version: ${{ env.TF_VERSION }}
       - run: terraform init -upgrade
-      - name: Skip import and use replace strategy
+      - name: Clean existing resources
         run: |
-          echo "Skipping import - using replace strategy instead"
-          # Vamos usar uma estratégia diferente: forçar replace dos recursos existentes
-      - name: Terraform Apply with replace
+          echo "Cleaning existing resources..."
+          # Deletar recursos existentes manualmente
+          aws ec2 delete-security-group --group-name fastfood-rds-sg 2>/dev/null || echo "Security Group not found"
+          aws rds delete-db-subnet-group --db-subnet-group-name fastfood-rds-subnetgrp 2>/dev/null || echo "DB Subnet Group not found"
+          aws secretsmanager delete-secret --secret-id fastfood/rds/postgres --force-delete-without-recovery 2>/dev/null || echo "Secret not found"
+          aws rds delete-db-parameter-group --db-parameter-group-name fastfood-pg16 2>/dev/null || echo "DB Parameter Group not found"
+          aws iam detach-role-policy --role-name fastfood-rds-monitoring-role --policy-arn arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole 2>/dev/null || echo "Policy not attached"
+          aws iam delete-role --role-name fastfood-rds-monitoring-role 2>/dev/null || echo "IAM Role not found"
+          echo "Cleanup completed"
+      - name: Terraform Apply
         run: |
-          # Primeiro, tentar aplicar normalmente
-          terraform apply -auto-approve \
-            -var="project_name=fastfood" \
-            -var="aws_region=${{ env.AWS_REGION }}" \
-            -var="vpc_id=${{ secrets.VPC_ID }}" \
-            -var='private_subnet_ids=${{ secrets.PRIVATE_SUBNET_IDS }}' \
-            -var='allowed_sg_ids=${{ secrets.ALLOWED_SG_IDS }}' \
-            -replace="aws_security_group.rds" \
-            -replace="aws_db_subnet_group.this" \
-            -replace="aws_secretsmanager_secret.db_secret" \
-            -replace="aws_db_parameter_group.pg" \
-            -replace="aws_iam_role.rds_monitoring" || \
-          # Se falhar, tentar sem replace
           terraform apply -auto-approve \
             -var="project_name=fastfood" \
             -var="aws_region=${{ env.AWS_REGION }}" \

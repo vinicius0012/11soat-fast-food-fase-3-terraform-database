@@ -10,13 +10,13 @@ terraform {
       version = ">= 3.6.0"
     }
   }
-  backend "s3" {
-    bucket         = "fastfood-terraform-state-bucket"
-    key            = "database/terraform.tfstate"
-    region         = "sa-east-1"
-    dynamodb_table = "fastfood-terraform-lock"
-    encrypt        = true
-  }
+  # backend "s3" {
+  #   bucket         = "fastfood-terraform-state-bucket"
+  #   key            = "database/terraform.tfstate"
+  #   region         = "sa-east-1"
+  #   dynamodb_table = "fastfood-terraform-lock"
+  #   encrypt        = true
+  # }
 }
 provider "aws" {
   region = var.aws_region
